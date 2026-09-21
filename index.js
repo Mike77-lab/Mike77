@@ -1,24 +1,30 @@
 const express = require('express');
+const fs = require('fs');
+const csv = require('csv-parser');
+
 const app = express();
 const port = process.env.PORT || 3000;
 
-// Ruta principal
+// Ruta 1: Inicio
 app.get('/', (req, res) => {
-  res.send('servidor activo con aws y eso');
+  res.send('Servidor activo y conectado al archivo CSV');
 });
 
-// Ruta 1: Devolver una lista de productos en formato JSON
-app.get('/api/productos', (req, res) => {
-  res.json([
-    { id: 1, nombre: 'Camiseta', precio: 25 },
-    { id: 2, nombre: 'Zapatos', precio: 60 }
-  ]);
-});
+// Ruta 2: Leer el CSV de Clientes y devolver la información
+app.get('/api/clientes', (req, res) => {
+  const clientes = [];
 
-// Ruta 2: "Hacer preguntas" al servidor con parámetros en la URL
-app.get('/saludo/:nombre', (req, res) => {
-  const nombreUsuario = req.params.nombre;
-  res.send(`¡Hola ${nombreUsuario}! Bienvenido a la tienda virtual.`);
+  // Lee el archivo clientes.csv línea por línea
+  fs.createReadStream('clientes.csv')
+    .pipe(csv())
+    .on('data', (data) => clientes.push(data))
+    .on('end', () => {
+      // Envía los clientes en formato JSON al navegador
+      res.json(clientes);
+    })
+    .on('error', (error) => {
+      res.status(500).json({ mensaje: 'Error al leer el archivo CSV', error });
+    });
 });
 
 app.listen(port, () => {
