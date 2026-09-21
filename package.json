@@ -12,6 +12,7 @@
   "type": "commonjs",
   "dependencies": {
     "csv-parser": "^3.2.1",
-    "express": "^5.2.1"
+    "express": "^5.2.1",
+    "fast-csv": "^5.0.7"
   }
 }
