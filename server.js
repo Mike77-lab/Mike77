@@ -63,12 +63,18 @@ const servidor = http.createServer(async (req, res) => {
 
   try {
     if (req.method === 'GET' && ruta === '/') {
-      const html = fs.readFileSync(path.join(__dirname, 'public', 'index.html'));
-      res.writeHead(200, {
-        'Content-Type': 'text/html; charset=utf-8',
-        'Content-Length': html.length
-      });
-      res.end(html);
+      const rutaHtml = path.join(__dirname, 'public', 'index.html');
+      if (fs.existsSync(rutaHtml)) {
+        const html = fs.readFileSync(rutaHtml);
+        res.writeHead(200, {
+          'Content-Type': 'text/html; charset=utf-8',
+          'Content-Length': html.length
+        });
+        res.end(html);
+      } else {
+        res.writeHead(200, { 'Content-Type': 'text/plain; charset=utf-8' });
+        res.end('Servidor corriendo. Crea public/index.html para ver el frontend.');
+      }
       return;
     }
     const match = ruta.match(/^\/api\/clientes\/(\d+)$/);
