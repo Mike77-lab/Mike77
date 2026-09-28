@@ -3,6 +3,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const PORT = process.env.PORT || 3000;
 const CSV = path.join(__dirname, 'data', 'clientes.csv');
+const { eventLogger, metricas } = require('./bigdata/eventLogger');
 let siguienteSolicitud = 0;
 
 function leerClientes() {
@@ -54,6 +55,9 @@ function validar(datos) {
 }
 
 const servidor = http.createServer(async (req, res) => {
+  // Ejecutar el registrador de eventos para cada petición
+  eventLogger(req, res);
+
   const numero = ++siguienteSolicitud;
   const url = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
   const ruta = url.pathname;
@@ -77,6 +81,18 @@ const servidor = http.createServer(async (req, res) => {
       }
       return;
     }
+
+    // Rutas de Big Data / Laboratorio (Fase 4)
+    if (ruta === '/api/laboratorio/evento') {
+      responder(res, 200, { recibido: true, metodo: req.method });
+      return;
+    }
+
+    if (req.method === 'GET' && ruta === '/api/bigdata/metricas') {
+      responder(res, 200, { ...metricas, ahora: new Date().toISOString() });
+      return;
+    }
+
     const match = ruta.match(/^\/api\/clientes\/(\d+)$/);
     if (ruta !== '/api/clientes' && !match) {
       responder(res, 404, { error: 'Ruta no encontrada' }); return;
